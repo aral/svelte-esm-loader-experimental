@@ -1,0 +1,1 @@
+<p><strong>This is an inner component.</strong></p>

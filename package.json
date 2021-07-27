@@ -5,10 +5,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node --experimental-modules --experimental-loader ./loader.mjs src/server.js"
+    "dev": "node --experimental-modules --experimental-loader ./loader.mjs src/server.js"
   },
   "dependencies": {
     "polka": "^0.5.2",
-    "svelte": "^3.24.0"
+    "svelte": "^3.41.0"
   }
 }

@@ -1,4 +1,12 @@
-# Exerimental ES module loader for Svelte
+# Basic, hardcoded Svelte SSR with Hydration example using experimental Node.js module loader
+
+This is a fork of Josh Nuss’s [svelte-esm-loader-experimental] that:
+
+  - has a naïve proof-of-concept of server-side rendering (SSR) with client-side hydration (with hardcoded Svelte dependency handling in the generated DOM code with a single Inner component dependency)
+  - is upgraded to use the latest Svelte version
+  - `npm run start` changed to `npm run dev`
+
+## Original module documentation follows
 
 Svelte ships with the ability to import `.svelte` files using `commonjs`'s `require` syntax.
 This is an experiment to add support for esm's `import` syntax as well.
