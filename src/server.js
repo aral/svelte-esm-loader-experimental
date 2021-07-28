@@ -4,12 +4,10 @@ import fs from 'fs'
 
 const appEsbuildJs = fs.readFileSync('App-esbuild.js', 'utf-8')
 
+// TODO: Integrate esbuild-compile-svelte into the server.
+// (Currently you have to call it manually.)
+
 polka()
-  .get('/App-esbuild.js', (req, res) => {
-    res
-      .setHeader('Content-Type', 'application/javascript')
-      .end(appEsbuildJs)
-  })
   .get('/', (req, res) => {
     // We should really be adding the SSR data here.
     // (Currently mocked in the loader.)
@@ -37,7 +35,7 @@ polka()
     `
 
     const htmlWithHydration = fullHtml.replace('</body>', `<script type='module'>
-      import App from './App-esbuild.js'
+      ${appEsbuildJs}
 
       new App({
         target: document.getElementById('app'),
