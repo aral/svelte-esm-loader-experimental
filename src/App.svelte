@@ -15,6 +15,12 @@
 
 <h1>Hello {name}!</h1>
 
-<p>Data is {data}</p>
+<p>Data: {data}</p>
 
 <Inner />
+
+<style>
+  h1 {
+    color: red;
+  }
+</style>

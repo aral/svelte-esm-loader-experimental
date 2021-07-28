@@ -2,6 +2,8 @@
 import {
 	SvelteComponent,
 	append_hydration,
+	append_styles,
+	attr,
 	children,
 	claim_component,
 	claim_element,
@@ -23,6 +25,10 @@ import {
 } from "/modules/svelte/internal";
 
 import Inner from './Inner.js';
+
+function add_css(target) {
+	append_styles(target, "svelte-1tb9iu1", "h1.svelte-1tb9iu1{color:red}");
+}
 
 function create_fragment(ctx) {
 	let h1;
@@ -46,13 +52,14 @@ function create_fragment(ctx) {
 			t2 = text("!");
 			t3 = space();
 			p = element("p");
-			t4 = text("Data is ");
+			t4 = text("Data: ");
 			t5 = text(/*data*/ ctx[1]);
 			t6 = space();
 			create_component(inner.$$.fragment);
+			this.h();
 		},
 		l(nodes) {
-			h1 = claim_element(nodes, "H1", {});
+			h1 = claim_element(nodes, "H1", { class: true });
 			var h1_nodes = children(h1);
 			t0 = claim_text(h1_nodes, "Hello ");
 			t1 = claim_text(h1_nodes, /*name*/ ctx[0]);
@@ -61,11 +68,15 @@ function create_fragment(ctx) {
 			t3 = claim_space(nodes);
 			p = claim_element(nodes, "P", {});
 			var p_nodes = children(p);
-			t4 = claim_text(p_nodes, "Data is ");
+			t4 = claim_text(p_nodes, "Data: ");
 			t5 = claim_text(p_nodes, /*data*/ ctx[1]);
 			p_nodes.forEach(detach);
 			t6 = claim_space(nodes);
 			claim_component(inner.$$.fragment, nodes);
+			this.h();
+		},
+		h() {
+			attr(h1, "class", "svelte-1tb9iu1");
 		},
 		m(target, anchor) {
 			insert_hydration(target, h1, anchor);
@@ -124,7 +135,7 @@ function instance($$self, $$props, $$invalidate) {
 class Component extends SvelteComponent {
 	constructor(options) {
 		super();
-		init(this, options, instance, create_fragment, safe_not_equal, { name: 0 });
+		init(this, options, instance, create_fragment, safe_not_equal, { name: 0 }, add_css);
 	}
 }
 
