@@ -9,7 +9,7 @@
   let data
 
   setTimeout(() => {
-    data = ['and', 'this', 'is', 'an', 'update']
+    data = ['and', 'this', 'could', 'be', 'an', 'update', 'from', 'the', 'server']
   }, 2000)
 </script>
 

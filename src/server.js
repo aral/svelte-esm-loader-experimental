@@ -13,7 +13,7 @@ polka()
   .get('/', (req, res) => {
     // We should really be adding the SSR data here.
     // (Currently mocked in the loader.)
-    const { html, css } = App.render({name: "World"})
+    const { html, css } = App.render({name: "from the server"})
 
     console.log('===============')
 
@@ -43,7 +43,7 @@ polka()
         target: document.getElementById('app'),
         hydrate: true,
         props: {
-          name: 'hydration'
+          name: 'from the client'
         }
       })
     </script></body>`)
