@@ -2,9 +2,50 @@
 
 This is a fork of Josh Nuss’s [svelte-esm-loader-experimental] that:
 
-  - has a naïve proof-of-concept of server-side rendering (SSR) with client-side hydration (with hardcoded Svelte dependency handling in the generated DOM code with a single Inner component dependency)
+  - implements a proof-of-concept of server-side rendering (SSR) with client-side
+    hydration (with nested components and context transfer from server to client)
+
   - is upgraded to use the latest Svelte version
+
   - `npm run start` changed to `npm run dev`
+
+## Server-side render notes
+
+### Spike: custom Node ES Module loader for server-side render
+
+```shell
+npm run dev
+```
+
+(Generate the hydration script manually first. See below.)
+
+Result: works. Will use.
+
+See [loader.mjs](./loader.mjs)
+
+### Spike: esbuild to generate hydration script
+
+```shell
+node ./esbuild-compile-svelte.js
+```
+
+Result: works. Will use.
+
+See [esbuild-compile-svelte.js](./esbuild-compile-svelte.js)
+
+### Spike: esbuild to generate the server-side render
+
+```shell
+node ./esbuild-compile-svelte-html.js
+```
+
+Results: works. __Won’t use.__
+
+(The Node ES Module loader is far cleaner. In the actual framework implementation, I need to refactor the common transformations into a separate module shared with the esbuild hydration build.)
+
+See [esbuild-compile-svelte-html.js](./esbuild-compile-svelte.js)
+
+---
 
 ## Original module documentation follows
 
@@ -45,4 +86,6 @@ const output = App.render(...)
 
 # License
 
-MIT
+  - Original: MIT
+  - Any code added/changed by Aral: AGPLv3
+
