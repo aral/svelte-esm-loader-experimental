@@ -925,7 +925,7 @@ function instance2($$self, $$props, $$invalidate) {
   let { name } = $$props;
   let data = ["this", "could", "be", "from", "a", "database"];
   setTimeout(() => {
-    $$invalidate(1, data = ["and, this, is, an, update"]);
+    $$invalidate(1, data = ["and", "this", "is", "an", "update"]);
   }, 2e3);
   $$self.$$set = ($$props2) => {
     if ("name" in $$props2)
