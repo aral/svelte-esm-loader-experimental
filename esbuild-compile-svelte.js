@@ -79,10 +79,24 @@ let sveltePlugin = {
 
 import esbuild from 'esbuild'
 
-esbuild.build({
-  entryPoints: ['src/App.svelte'],
-  bundle: true,
-  outfile: 'App-esbuild.js',
-  format: 'esm',
-  plugins: [sveltePlugin],
-}).catch(() => process.exit(1))
+let result
+try {
+  result = await esbuild.build({
+    entryPoints: ['src/App.svelte'],
+    bundle: true,
+    // outfile: 'App-esbuild.js',
+    format: 'esm',
+    // Do not write out, we will consume the generated source from here.
+    write: false,
+    plugins: [sveltePlugin],
+  })
+} catch (error) {
+  console.error('esbuild error', error)
+  process.exit(1)
+}
+
+const code = new TextDecoder().decode(result.outputFiles[0].contents)
+
+// For now, just write the file.
+// In actuality, we will store the contents in memory.
+fs.writeFileSync('App-esbuild.js', code, 'utf-8')
