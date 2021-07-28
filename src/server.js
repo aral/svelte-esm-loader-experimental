@@ -2,10 +2,12 @@ import polka from 'polka'
 import App from './App.svelte'
 import fs from 'fs'
 
-const appEsbuildJs = fs.readFileSync('App-esbuild.js', 'utf-8')
-
-// TODO: Integrate esbuild-compile-svelte into the server.
+// TODO: Integrate esbuild-compile-svelte into the server
+// ===== and include the hydration script in the server-side
+//       render from memory.
+//
 // (Currently you have to call it manually.)
+const appEsbuildJs = fs.readFileSync('App-esbuild.js', 'utf-8')
 
 polka()
   .get('/', (req, res) => {
