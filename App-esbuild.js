@@ -680,7 +680,7 @@ var Layout_default = Layout;
 
 // src/InnerInner.svelte
 function add_css2(target) {
-  append_styles(target, "svelte-1mptaoj", "p.svelte-1mptaoj{color:yellow}");
+  append_styles(target, "svelte-1dob82l", "p.svelte-1dob82l{color:salmon}");
 }
 function create_fragment2(ctx) {
   let p;
@@ -699,7 +699,7 @@ function create_fragment2(ctx) {
       this.h();
     },
     h() {
-      attr(p, "class", "svelte-1mptaoj");
+      attr(p, "class", "svelte-1dob82l");
     },
     m(target, anchor) {
       insert_hydration(target, p, anchor);

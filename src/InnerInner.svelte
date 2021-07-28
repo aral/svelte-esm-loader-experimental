@@ -2,6 +2,6 @@
 
 <style>
   p {
-    color: yellow;
+    color: salmon;
   }
 </style>
