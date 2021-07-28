@@ -8,6 +8,7 @@
     "dev": "node --experimental-modules --experimental-loader ./loader.mjs src/server.js"
   },
   "dependencies": {
+    "esbuild": "^0.12.16",
     "polka": "^0.5.2",
     "svelte": "^3.41.0"
   }

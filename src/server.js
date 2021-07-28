@@ -4,6 +4,7 @@ import fs from 'fs'
 
 const svelteInternal = fs.readFileSync('node_modules/svelte/internal/index.mjs', 'utf-8')
 const appJs = fs.readFileSync('App.js', 'utf-8')
+const appEsbuildJs = fs.readFileSync('App-esbuild.js', 'utf-8')
 const innerJs = fs.readFileSync('Inner.js', 'utf-8')
 
 polka()
@@ -17,6 +18,11 @@ polka()
     res
       .setHeader('Content-Type', 'application/javascript')
       .end(appJs)
+  })
+  .get('/App-esbuild.js', (req, res) => {
+    res
+      .setHeader('Content-Type', 'application/javascript')
+      .end(appEsbuildJs)
   })
   .get('/Inner.js', (req, res) => {
     res
@@ -49,7 +55,7 @@ polka()
     `
 
     const htmlWithHydration = fullHtml.replace('</body>', `<script type='module'>
-      import App from './App.js'
+      import App from './App-esbuild.js'
 
       new App({
         target: document.getElementById('app'),
