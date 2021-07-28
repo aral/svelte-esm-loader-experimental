@@ -1,6 +1,11 @@
 // node_modules/svelte/internal/index.mjs
 function noop() {
 }
+function assign(tar, src) {
+  for (const k in src)
+    tar[k] = src[k];
+  return tar;
+}
 function run(fn) {
   return fn();
 }
@@ -18,6 +23,50 @@ function safe_not_equal(a, b) {
 }
 function is_empty(obj) {
   return Object.keys(obj).length === 0;
+}
+function create_slot(definition, ctx, $$scope, fn) {
+  if (definition) {
+    const slot_ctx = get_slot_context(definition, ctx, $$scope, fn);
+    return definition[0](slot_ctx);
+  }
+}
+function get_slot_context(definition, ctx, $$scope, fn) {
+  return definition[1] && fn ? assign($$scope.ctx.slice(), definition[1](fn(ctx))) : $$scope.ctx;
+}
+function get_slot_changes(definition, $$scope, dirty, fn) {
+  if (definition[2] && fn) {
+    const lets = definition[2](fn(dirty));
+    if ($$scope.dirty === void 0) {
+      return lets;
+    }
+    if (typeof lets === "object") {
+      const merged = [];
+      const len = Math.max($$scope.dirty.length, lets.length);
+      for (let i = 0; i < len; i += 1) {
+        merged[i] = $$scope.dirty[i] | lets[i];
+      }
+      return merged;
+    }
+    return $$scope.dirty | lets;
+  }
+  return $$scope.dirty;
+}
+function update_slot_base(slot, slot_definition, ctx, $$scope, slot_changes, get_slot_context_fn) {
+  if (slot_changes) {
+    const slot_context = get_slot_context(slot_definition, ctx, $$scope, get_slot_context_fn);
+    slot.p(slot_context, slot_changes);
+  }
+}
+function get_all_dirty_from_scope($$scope) {
+  if ($$scope.ctx.length > 32) {
+    const dirty = [];
+    const length = $$scope.ctx.length / 32;
+    for (let i = 0; i < length; i++) {
+      dirty[i] = -1;
+    }
+    return dirty;
+  }
+  return -1;
 }
 var tasks = new Set();
 var is_hydrating = false;
@@ -394,7 +443,7 @@ function make_dirty(component, i) {
   }
   component.$$.dirty[i / 31 | 0] |= 1 << i % 31;
 }
-function init(component, options, instance2, create_fragment3, not_equal, props, append_styles2, dirty = [-1]) {
+function init(component, options, instance3, create_fragment5, not_equal, props, append_styles2, dirty = [-1]) {
   const parent_component = current_component;
   set_current_component(component);
   const $$ = component.$$ = {
@@ -417,7 +466,7 @@ function init(component, options, instance2, create_fragment3, not_equal, props,
   };
   append_styles2 && append_styles2($$.root);
   let ready = false;
-  $$.ctx = instance2 ? instance2(component, options.props || {}, (i, ret, ...rest) => {
+  $$.ctx = instance3 ? instance3(component, options.props || {}, (i, ret, ...rest) => {
     const value = rest.length ? rest[0] : ret;
     if ($$.ctx && not_equal($$.ctx[i], $$.ctx[i] = value)) {
       if (!$$.skip_bound && $$.bound[i])
@@ -430,7 +479,7 @@ function init(component, options, instance2, create_fragment3, not_equal, props,
   $$.update();
   ready = true;
   run_all($$.before_update);
-  $$.fragment = create_fragment3 ? create_fragment3($$.ctx) : false;
+  $$.fragment = create_fragment5 ? create_fragment5($$.ctx) : false;
   if (options.target) {
     if (options.hydrate) {
       start_hydrating();
@@ -513,30 +562,148 @@ var SvelteComponent = class {
   }
 };
 
-// src/Inner.svelte
+// src/Layout.svelte
+function add_css(target) {
+  append_styles(target, "svelte-15mdyzj", "header.svelte-15mdyzj{border-bottom:1px solid blueviolet}footer.svelte-15mdyzj{border-top:1px solid blueviolet}");
+}
 function create_fragment(ctx) {
+  let header;
+  let h1;
+  let t0;
+  let t1;
+  let t2;
+  let footer;
+  let small;
+  let t3;
+  let current;
+  const default_slot_template = ctx[1].default;
+  const default_slot = create_slot(default_slot_template, ctx, ctx[0], null);
+  return {
+    c() {
+      header = element("header");
+      h1 = element("h1");
+      t0 = text("This is a header from the Layout.");
+      t1 = space();
+      if (default_slot)
+        default_slot.c();
+      t2 = space();
+      footer = element("footer");
+      small = element("small");
+      t3 = text("This is a footer.");
+      this.h();
+    },
+    l(nodes) {
+      header = claim_element(nodes, "HEADER", { class: true });
+      var header_nodes = children(header);
+      h1 = claim_element(header_nodes, "H1", {});
+      var h1_nodes = children(h1);
+      t0 = claim_text(h1_nodes, "This is a header from the Layout.");
+      h1_nodes.forEach(detach);
+      header_nodes.forEach(detach);
+      t1 = claim_space(nodes);
+      if (default_slot)
+        default_slot.l(nodes);
+      t2 = claim_space(nodes);
+      footer = claim_element(nodes, "FOOTER", { class: true });
+      var footer_nodes = children(footer);
+      small = claim_element(footer_nodes, "SMALL", {});
+      var small_nodes = children(small);
+      t3 = claim_text(small_nodes, "This is a footer.");
+      small_nodes.forEach(detach);
+      footer_nodes.forEach(detach);
+      this.h();
+    },
+    h() {
+      attr(header, "class", "svelte-15mdyzj");
+      attr(footer, "class", "svelte-15mdyzj");
+    },
+    m(target, anchor) {
+      insert_hydration(target, header, anchor);
+      append_hydration(header, h1);
+      append_hydration(h1, t0);
+      insert_hydration(target, t1, anchor);
+      if (default_slot) {
+        default_slot.m(target, anchor);
+      }
+      insert_hydration(target, t2, anchor);
+      insert_hydration(target, footer, anchor);
+      append_hydration(footer, small);
+      append_hydration(small, t3);
+      current = true;
+    },
+    p(ctx2, [dirty]) {
+      if (default_slot) {
+        if (default_slot.p && (!current || dirty & 1)) {
+          update_slot_base(default_slot, default_slot_template, ctx2, ctx2[0], !current ? get_all_dirty_from_scope(ctx2[0]) : get_slot_changes(default_slot_template, ctx2[0], dirty, null), null);
+        }
+      }
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(default_slot, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(default_slot, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(header);
+      if (detaching)
+        detach(t1);
+      if (default_slot)
+        default_slot.d(detaching);
+      if (detaching)
+        detach(t2);
+      if (detaching)
+        detach(footer);
+    }
+  };
+}
+function instance($$self, $$props, $$invalidate) {
+  let { $$slots: slots = {}, $$scope } = $$props;
+  $$self.$$set = ($$props2) => {
+    if ("$$scope" in $$props2)
+      $$invalidate(0, $$scope = $$props2.$$scope);
+  };
+  return [$$scope, slots];
+}
+var Layout = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance, create_fragment, safe_not_equal, {}, add_css);
+  }
+};
+var Layout_default = Layout;
+
+// src/InnerInner.svelte
+function add_css2(target) {
+  append_styles(target, "svelte-1mptaoj", "p.svelte-1mptaoj{color:yellow}");
+}
+function create_fragment2(ctx) {
   let p;
-  let strong;
   let t;
   return {
     c() {
       p = element("p");
-      strong = element("strong");
-      t = text("This is an inner component.");
+      t = text("This is an inner inner component.");
+      this.h();
     },
     l(nodes) {
-      p = claim_element(nodes, "P", {});
+      p = claim_element(nodes, "P", { class: true });
       var p_nodes = children(p);
-      strong = claim_element(p_nodes, "STRONG", {});
-      var strong_nodes = children(strong);
-      t = claim_text(strong_nodes, "This is an inner component.");
-      strong_nodes.forEach(detach);
+      t = claim_text(p_nodes, "This is an inner inner component.");
       p_nodes.forEach(detach);
+      this.h();
+    },
+    h() {
+      attr(p, "class", "svelte-1mptaoj");
     },
     m(target, anchor) {
       insert_hydration(target, p, anchor);
-      append_hydration(p, strong);
-      append_hydration(strong, t);
+      append_hydration(p, t);
     },
     p: noop,
     i: noop,
@@ -547,19 +714,83 @@ function create_fragment(ctx) {
     }
   };
 }
+var InnerInner = class extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, null, create_fragment2, safe_not_equal, {}, add_css2);
+  }
+};
+var InnerInner_default = InnerInner;
+
+// src/Inner.svelte
+function create_fragment3(ctx) {
+  let p;
+  let strong;
+  let t0;
+  let t1;
+  let innerinner;
+  let current;
+  innerinner = new InnerInner_default({});
+  return {
+    c() {
+      p = element("p");
+      strong = element("strong");
+      t0 = text("This is an inner component.");
+      t1 = space();
+      create_component(innerinner.$$.fragment);
+    },
+    l(nodes) {
+      p = claim_element(nodes, "P", {});
+      var p_nodes = children(p);
+      strong = claim_element(p_nodes, "STRONG", {});
+      var strong_nodes = children(strong);
+      t0 = claim_text(strong_nodes, "This is an inner component.");
+      strong_nodes.forEach(detach);
+      p_nodes.forEach(detach);
+      t1 = claim_space(nodes);
+      claim_component(innerinner.$$.fragment, nodes);
+    },
+    m(target, anchor) {
+      insert_hydration(target, p, anchor);
+      append_hydration(p, strong);
+      append_hydration(strong, t0);
+      insert_hydration(target, t1, anchor);
+      mount_component(innerinner, target, anchor);
+      current = true;
+    },
+    p: noop,
+    i(local) {
+      if (current)
+        return;
+      transition_in(innerinner.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(innerinner.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(p);
+      if (detaching)
+        detach(t1);
+      destroy_component(innerinner, detaching);
+    }
+  };
+}
 var Inner = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, null, create_fragment, safe_not_equal, {});
+    init(this, options, null, create_fragment3, safe_not_equal, {});
   }
 };
 var Inner_default = Inner;
 
 // src/App.svelte
-function add_css(target) {
+function add_css3(target) {
   append_styles(target, "svelte-1tb9iu1", "h1.svelte-1tb9iu1{color:red}");
 }
-function create_fragment2(ctx) {
+function create_default_slot(ctx) {
   let h1;
   let t0;
   let t1;
@@ -619,7 +850,7 @@ function create_fragment2(ctx) {
       mount_component(inner, target, anchor);
       current = true;
     },
-    p(ctx2, [dirty]) {
+    p(ctx2, dirty) {
       if (!current || dirty & 1)
         set_data(t1, ctx2[0]);
       if (!current || dirty & 2)
@@ -648,7 +879,49 @@ function create_fragment2(ctx) {
     }
   };
 }
-function instance($$self, $$props, $$invalidate) {
+function create_fragment4(ctx) {
+  let layout;
+  let current;
+  layout = new Layout_default({
+    props: {
+      $$slots: { default: [create_default_slot] },
+      $$scope: { ctx }
+    }
+  });
+  return {
+    c() {
+      create_component(layout.$$.fragment);
+    },
+    l(nodes) {
+      claim_component(layout.$$.fragment, nodes);
+    },
+    m(target, anchor) {
+      mount_component(layout, target, anchor);
+      current = true;
+    },
+    p(ctx2, [dirty]) {
+      const layout_changes = {};
+      if (dirty & 7) {
+        layout_changes.$$scope = { dirty, ctx: ctx2 };
+      }
+      layout.$set(layout_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(layout.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(layout.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      destroy_component(layout, detaching);
+    }
+  };
+}
+function instance2($$self, $$props, $$invalidate) {
   let { name } = $$props;
   let data = ["this", "could", "be", "from", "a", "database"];
   setTimeout(() => {
@@ -663,7 +936,7 @@ function instance($$self, $$props, $$invalidate) {
 var App = class extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance, create_fragment2, safe_not_equal, { name: 0 }, add_css);
+    init(this, options, instance2, create_fragment4, safe_not_equal, { name: 0 }, add_css3);
   }
 };
 var App_default = App;

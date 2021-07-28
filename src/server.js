@@ -2,37 +2,18 @@ import polka from 'polka'
 import App from './App.svelte'
 import fs from 'fs'
 
-const svelteInternal = fs.readFileSync('node_modules/svelte/internal/index.mjs', 'utf-8')
-const appJs = fs.readFileSync('App.js', 'utf-8')
 const appEsbuildJs = fs.readFileSync('App-esbuild.js', 'utf-8')
-const innerJs = fs.readFileSync('Inner.js', 'utf-8')
 
 polka()
-  // Serve Svelte ES Module to client.
-  .get('/modules/svelte/internal', (req, res) => {
-    res
-      .setHeader('Content-Type', 'application/javascript')
-      .end(svelteInternal)
-  })
-  .get('/App.js', (req, res) => {
-    res
-      .setHeader('Content-Type', 'application/javascript')
-      .end(appJs)
-  })
   .get('/App-esbuild.js', (req, res) => {
     res
       .setHeader('Content-Type', 'application/javascript')
       .end(appEsbuildJs)
   })
-  .get('/Inner.js', (req, res) => {
-    res
-      .setHeader('Content-Type', 'application/javascript')
-      .end(innerJs)
-  })
   .get('/', (req, res) => {
     // We should really be adding the SSR data here.
     // (Currently mocked in the loader.)
-    const { html } = App.render({name: "World"})
+    const { html, css } = App.render({name: "World"})
 
     console.log('===============')
 
@@ -45,6 +26,7 @@ polka()
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <link rel="icon" href="data:,">
   <title>Document</title>
+  <style>${css.code}</style>
 </head>
 <body>
     <div id='app'>
@@ -65,6 +47,8 @@ polka()
         }
       })
     </script></body>`)
+
+    // const htmlWithHydration = fullHtml
 
     console.log(htmlWithHydration)
 

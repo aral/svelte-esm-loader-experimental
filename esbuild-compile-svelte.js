@@ -4,7 +4,9 @@ import path from 'path'
 import fs from 'fs'
 import { compile } from 'svelte/compiler'
 
+const scriptRegExp = /\<script\>.*?\<\/script\>/s
 const nodeScriptRegExp = /\<script type=['"]node['"]\>(.*?)\<\/script\>/s
+const styleRegExp = /\<style\>.*?\<\/style\>/s
 
 let sveltePlugin = {
   name: 'svelte',
@@ -47,6 +49,17 @@ let sveltePlugin = {
         // console.log('DATA', data)
         source = source.replace('let data', `let data = ${JSON.stringify(data)}`)
         // console.log(svelteSource)
+      }
+
+      // Layout support (again, hardcoded for this spike)
+      if (args.path.endsWith('App.svelte')) {
+        const script = scriptRegExp.exec(source)[0]
+        const markup = source.replace(scriptRegExp, '').replace(styleRegExp, '').trim()
+
+        const scriptWithLayoutImport = script.replace('<script>', "<script>\n  import Layout from './Layout.svelte'\n")
+        const markupWithLayout = `<Layout>\n${markup}\n</Layout>`
+
+        source = source.replace(script, scriptWithLayoutImport).replace(markup, markupWithLayout)
       }
 
       // Convert Svelte syntax to JavaScript

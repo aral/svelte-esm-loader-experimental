@@ -2,7 +2,9 @@ import path from 'path'
 import fs from 'fs'
 import { compile } from 'svelte/compiler'
 
+const scriptRegExp = /\<script\>.*?\<\/script\>/s
 const nodeScriptRegExp = /\<script type=['"]node['"]\>(.*?)\<\/script\>/s
+const styleRegExp = /\<style\>.*?\<\/style\>/s
 
 export async function resolve(specifier, context, defaultResolve) {
   if (path.extname(specifier) === '.svelte') {
@@ -41,7 +43,7 @@ export async function getSource(href, context, defaultGetSource) {
 async function compileSource(filePath) {
   const source = fs.readFileSync(filePath, 'utf8')
 
-  console.log(filePath)
+  console.log('========>>>> FILEPATH = ', filePath)
 
   let svelteSource = source
   let nodeSource
@@ -61,6 +63,20 @@ async function compileSource(filePath) {
     // console.log(svelteSource)
   }
 
+  // Layout support (again, hardcoded for this spike)
+  // (In the actual framework, this would only take place in the .page loader.)
+  if (filePath.endsWith('App.svelte')) {
+    const script = scriptRegExp.exec(svelteSource)[0]
+    const markup = svelteSource.replace(scriptRegExp, '').replace(styleRegExp, '').trim()
+
+    const scriptWithLayoutImport = script.replace('<script>', "<script>\n  import Layout from './Layout.svelte'\n")
+    const markupWithLayout = `<Layout>\n${markup}\n</Layout>`
+
+    svelteSource = svelteSource.replace(script, scriptWithLayoutImport).replace(markup, markupWithLayout)
+
+  }
+  console.log('App with layout:\n', svelteSource)
+
   // Just for now.
   // console.log('Node source', nodeSource)
 
@@ -70,26 +86,15 @@ async function compileSource(filePath) {
     hydratable: true
   })
 
-  const clientOutput = compile(svelteSource, {
-    generate: 'dom',
-    format: 'esm',
-    hydratable: true,
-    sveltePath: '/modules/svelte'
-  })
+  // TODO: Generate client output using esbuild.
+  // (If so, should we use esbuild to create SSR build too?)
 
-  const clientSideFileName = path.parse(filePath).name
-  fs.writeFileSync(`${clientSideFileName}.js`, clientOutput.js.code.replace(`import Inner from './Inner.svelte';`, `import Inner from './Inner.js';`))
-
-  console.log('>>>', clientOutput)
+  // const clientOutput = compile(svelteSource, {
+  //   generate: 'dom',
+  //   format: 'esm',
+  //   hydratable: true,
+  //   sveltePath: '/modules/svelte'
+  // })
 
   return output.js.code
 }
-
-// /*
-//  * UGLY hack.
-//  * Without it it gives error:
-//  * "Directory import '.../node_modules/svelte/internal' is not supported resolving ES modules"
-//  */
-// function adjustImports(source) {
-//   return source.replace('from "svelte/internal";', 'from "svelte/internal/index.mjs";')
-// }
