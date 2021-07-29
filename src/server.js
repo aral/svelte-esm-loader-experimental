@@ -44,6 +44,10 @@ polka()
       new Src({
         target: document.getElementById('app'),
         hydrate: true,
+        // TODO: Note: the only prop that should actually be passed here
+        // ===== is the server-rendered data in the data prop (or, if we decide
+        //       to pass any other auto-generated information to the client, we
+        //       could rename that to context and have data be a property of it).
         props: {
           name: 'from the client'
         }

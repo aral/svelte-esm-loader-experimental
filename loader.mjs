@@ -67,7 +67,12 @@ async function compileSource(filePath) {
 
     // Write the Node script as a temporary file.
     fs.writeFileSync('Temp.js', nodeSource)
-    const data = (await import('./Temp.js')).data
+
+    // TODO: Once we render the data at the server (not here), we can pass
+    // ===== the actual request object here so the behaviour of the server-side
+    //       script can make use of it if it wants to (e.g., for authorisation, etc.)
+    const data = await((await import('./Temp.js')).default({mock: 'request'}))
+
     // console.log('DATA', data)
     svelteSource = svelteSource.replace('let data', `let data = ${JSON.stringify(data)}`)
     // console.log(svelteSource)
