@@ -1,4 +1,4 @@
-# Basic, hardcoded Svelte SSR with Hydration example using experimental Node.js module loader
+# Basic, hardcoded Svelte SSR with Hydration spike using experimental Node.js module loader
 
 This is a fork of Josh Nuss’s [svelte-esm-loader-experimental] that:
 
