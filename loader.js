@@ -1,13 +1,24 @@
 import path from 'path'
 import fs from 'fs'
 import { compile } from 'svelte/compiler'
+import { hydrationScriptCompiler } from './HydrationScriptCompiler.js'
+
+import JSDB from '@small-tech/jsdb'
+
+import { fileURLToPath } from 'url'
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
+
+const db = JSDB.open('.cache')
+if (!db.routes) {
+  db.routes = {}
+}
 
 const scriptRegExp = /\<script\>.*?\<\/script\>/s
 const nodeScriptRegExp = /\<script context=['"]node['"]\>(.*?)\<\/script\>/s
 const styleRegExp = /\<style\>.*?\<\/style\>/s
 
 export async function resolve(specifier, context, defaultResolve) {
-  if (path.extname(specifier) === '.svelte') {
+  if ((path.extname(specifier) === '.svelte') || (path.extname(specifier) === '.component') || (path.extname(specifier) === '.page') || (path.extname(specifier) === '.layout')) {
     const parentURL = new URL(context.parentURL)
     const parentPath = path.dirname(parentURL.pathname)
     const absolutePath = path.resolve(parentPath, specifier)
@@ -17,6 +28,7 @@ export async function resolve(specifier, context, defaultResolve) {
     }
   }
 
+  // console.log('LOADER', specifier, context, defaultResolve)
   return defaultResolve(specifier, context, defaultResolve)
 }
 
@@ -37,6 +49,7 @@ export async function getFormat(url, context, defaultGetFormat) {
   return defaultGetFormat(url, context, defaultGetFormat)
 }
 
+
 export async function getSource(href, context, defaultGetSource) {
   const url = new URL(href)
 
@@ -49,32 +62,25 @@ export async function getSource(href, context, defaultGetSource) {
   return defaultGetSource(href, context, defaultGetSource)
 }
 
+
 async function compileSource(filePath) {
   const source = fs.readFileSync(filePath, 'utf8')
 
+  const route = path.relative(__dirname, filePath)
+
   let svelteSource = source
-  let nodeSource
+  let nodeScript
+
   const nodeScriptResult = nodeScriptRegExp.exec(source)
   if (nodeScriptResult) {
     // Contains a Node script. Svelte knows nothing about this, so we
     // strip it out and persist it for use during server-side rendering.
     svelteSource = source.replace(nodeScriptResult[0], '')
-    nodeSource = nodeScriptResult[1]
 
-    // Inject the request into the script so its available
+    // Wrap the  request into the script so its available
     // to the script without making people wrap their script
     // in an async function.
-    nodeSource = `const request = {mock: 'request'};\n${nodeSource}`
-
-    // Write the Node script as a temporary file.
-    fs.writeFileSync('Temp.js', nodeSource)
-
-    // TODO: Once we render the data at the server (not here), we can pass
-    // ===== the actual request object here so the behaviour of the server-side
-    //       script can make use of it if it wants to (e.g., for authorisation, etc.)
-    const data = (await import('./Temp.js')).data
-
-    svelteSource = svelteSource.replace('let data', `let data = ${JSON.stringify(data)}`)
+    nodeScript = `export default async request => {\n${nodeScriptResult[1]}\n}`
   }
 
   // Layout support (again, hardcoded for this spike)
@@ -87,7 +93,6 @@ async function compileSource(filePath) {
     const markupWithLayout = `<PageLayout>\n${markup}\n</PageLayout>`
 
     svelteSource = svelteSource.replace(script, scriptWithLayoutImport).replace(markup, markupWithLayout)
-
   }
 
   const output = compile(svelteSource, {
@@ -96,15 +101,18 @@ async function compileSource(filePath) {
     hydratable: true
   })
 
-  // TODO: Generate client output using esbuild.
-  // (If so, should we use esbuild to create SSR build too?)
+  // TODO: loader must separate between .svelte/.component, .page, and .layout
+  // ===== and handle each accordingly.
 
-  // const clientOutput = compile(svelteSource, {
-  //   generate: 'dom',
-  //   format: 'esm',
-  //   hydratable: true,
-  //   sveltePath: '/modules/svelte'
-  // })
+  // Client-side hydration script.
+  const hydrationCode = await hydrationScriptCompiler(route)
+  const hydrationScript = hydrationCode
+
+  // Update the route cache with the material for this route.
+  db.routes[route] = {
+    nodeScript,
+    hydrationScript
+  }
 
   return output.js.code
 }

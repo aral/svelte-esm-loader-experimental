@@ -5,9 +5,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "node --experimental-modules --experimental-loader ./loader.mjs src/server.js"
+    "dev": "node --experimental-modules --experimental-loader ./loader.js server.js"
   },
   "dependencies": {
+    "@small-tech/jsdb": "^2.0.2",
     "esbuild": "^0.12.16",
     "polka": "^0.5.2",
     "require-from-string": "^2.0.2",

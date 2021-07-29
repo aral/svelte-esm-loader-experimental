@@ -1,17 +1,46 @@
+// Compile, link, and return (using esbuild) the
+// client-side hydration script for a page.
+
 // Adapted from:
 // https://esbuild.github.io/plugins/#svelte-plugin
 import path from 'path'
 import fs from 'fs'
 import { compile } from 'svelte/compiler'
+import esbuild from 'esbuild'
+
+export async function hydrationScriptCompiler (relativePagePath) {
+  let result
+  try {
+    result = await esbuild.build({
+      entryPoints: [relativePagePath],
+      bundle: true,
+      format: 'esm',
+      // Do not write out, we will consume the generated source from here.
+      write: false,
+      plugins: [sveltePlugin],
+    })
+  } catch (error) {
+    console.error('esbuild error', error)
+    process.exit(1)
+  }
+
+  const code = new TextDecoder().decode(result.outputFiles[0].contents)
+
+  return code
+}
+
+// Private
 
 const scriptRegExp = /\<script\>.*?\<\/script\>/s
 const nodeScriptRegExp = /\<script context=['"]node['"]\>(.*?)\<\/script\>/s
 const styleRegExp = /\<style\>.*?\<\/style\>/s
 
-let sveltePlugin = {
+const sveltePlugin = {
   name: 'svelte',
   setup(build) {
+    //
     build.onLoad({ filter: /(\.svelte|\.component|\.page|\.layout)$/ }, async (args) => {
+      // console.log('>>', args)
       // This converts a message in Svelte's format to esbuild's format
       let convertMessage = ({ message, start, end }) => {
         let location
@@ -33,19 +62,20 @@ let sveltePlugin = {
       let source = await fs.promises.readFile(args.path, 'utf8')
       let filename = path.relative(process.cwd(), args.path)
 
-
       let nodeSource
       const nodeScriptResult = nodeScriptRegExp.exec(source)
       if (nodeScriptResult) {
         // Contains a Node script. Svelte knows nothing about this, so we
         // strip it out and persist it for use during server-side rendering.
         source = source.replace(nodeScriptResult[0], '')
-        nodeSource = nodeScriptResult[1]
 
-        // Write the Node script as a temporary file.
-        fs.writeFileSync('Temp.js', nodeSource)
-        const data = (await import('./Temp.js')).data
-        source = source.replace('let data', `let data = ${JSON.stringify(data)}`)
+        // nodeSource = `export default async request => {\n${nodeScriptResult[1]}\n}`
+
+        // // Write the Node script as a temporary file.
+        // // TODO: this should write to a gitignored and hidden temporary file/folder.
+        // fs.writeFileSync('Temp.js', nodeSource)
+        // const data = (await import('./Temp.js')).data
+        // source = source.replace('let data', `let data = ${JSON.stringify(data)}`)
       }
 
       // Layout support (again, hardcoded for this spike)
@@ -73,26 +103,3 @@ let sveltePlugin = {
     })
   }
 }
-
-import esbuild from 'esbuild'
-
-let result
-try {
-  result = await esbuild.build({
-    entryPoints: ['src/index.page'],
-    bundle: true,
-    format: 'esm',
-    // Do not write out, we will consume the generated source from here.
-    write: false,
-    plugins: [sveltePlugin],
-  })
-} catch (error) {
-  console.error('esbuild error', error)
-  process.exit(1)
-}
-
-const code = new TextDecoder().decode(result.outputFiles[0].contents)
-
-// For now, just write the file.
-// In actuality, we will store the contents in memory.
-fs.writeFileSync('index.page-esbuild.js', code, 'utf-8')
