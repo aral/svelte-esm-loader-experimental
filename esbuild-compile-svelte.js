@@ -36,7 +36,6 @@ let sveltePlugin = {
 
       let nodeSource
       const nodeScriptResult = nodeScriptRegExp.exec(source)
-      // console.log('>>>>>>>>>>>>', nodeScriptResult)
       if (nodeScriptResult) {
         // Contains a Node script. Svelte knows nothing about this, so we
         // strip it out and persist it for use during server-side rendering.
@@ -46,9 +45,7 @@ let sveltePlugin = {
         // Write the Node script as a temporary file.
         fs.writeFileSync('Temp.js', nodeSource)
         const data = (await import('./Temp.js')).data
-        // console.log('DATA', data)
         source = source.replace('let data', `let data = ${JSON.stringify(data)}`)
-        // console.log(svelteSource)
       }
 
       // Layout support (again, hardcoded for this spike)
@@ -63,7 +60,6 @@ let sveltePlugin = {
       }
 
       // Convert Svelte syntax to JavaScript
-      console.log('FILENAME', filename)
       try {
         let { js, warnings } = compile(source, {
           filename,
@@ -96,8 +92,6 @@ try {
 }
 
 const code = new TextDecoder().decode(result.outputFiles[0].contents)
-
-console.log(code)
 
 // For now, just write the file.
 // In actuality, we will store the contents in memory.

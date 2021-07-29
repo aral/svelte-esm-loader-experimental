@@ -30,7 +30,6 @@ export async function resolve(specifier, context, defaultResolve) {
 //       is present (TODO).
 
 export async function getFormat(url, context, defaultGetFormat) {
-  console.log('getFormat', url, context, defaultGetFormat)
   if (url.endsWith('.svelte') || url.endsWith('.component') || url.endsWith('.page') || url.endsWith('.layout')) {
     return { format: 'module' }
   }
@@ -53,17 +52,19 @@ export async function getSource(href, context, defaultGetSource) {
 async function compileSource(filePath) {
   const source = fs.readFileSync(filePath, 'utf8')
 
-  console.log('compileSource ========>>>> FILEPATH = ', filePath)
-
   let svelteSource = source
   let nodeSource
   const nodeScriptResult = nodeScriptRegExp.exec(source)
-  // console.log('>>>>>>>>>>>>', nodeScriptResult)
   if (nodeScriptResult) {
     // Contains a Node script. Svelte knows nothing about this, so we
     // strip it out and persist it for use during server-side rendering.
     svelteSource = source.replace(nodeScriptResult[0], '')
     nodeSource = nodeScriptResult[1]
+
+    // Inject the request into the script so its available
+    // to the script without making people wrap their script
+    // in an async function.
+    nodeSource = `const request = {mock: 'request'};\n${nodeSource}`
 
     // Write the Node script as a temporary file.
     fs.writeFileSync('Temp.js', nodeSource)
@@ -71,11 +72,9 @@ async function compileSource(filePath) {
     // TODO: Once we render the data at the server (not here), we can pass
     // ===== the actual request object here so the behaviour of the server-side
     //       script can make use of it if it wants to (e.g., for authorisation, etc.)
-    const data = await((await import('./Temp.js')).default({mock: 'request'}))
+    const data = (await import('./Temp.js')).data
 
-    // console.log('DATA', data)
     svelteSource = svelteSource.replace('let data', `let data = ${JSON.stringify(data)}`)
-    // console.log(svelteSource)
   }
 
   // Layout support (again, hardcoded for this spike)
@@ -90,10 +89,6 @@ async function compileSource(filePath) {
     svelteSource = svelteSource.replace(script, scriptWithLayoutImport).replace(markup, markupWithLayout)
 
   }
-  console.log('App with layout:\n', svelteSource)
-
-  // Just for now.
-  // console.log('Node source', nodeSource)
 
   const output = compile(svelteSource, {
     generate: 'ssr',

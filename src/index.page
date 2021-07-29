@@ -1,15 +1,12 @@
 <script context='node'>
-  export default async request => {
-    return ['this', 'could', 'be', 'from', 'a', 'database', request.mock]
-  }
-
-  // TODO: Actually, you shouldn’t even need to define an anonymous function.
-  // ===== Instead, we can inject request as a special variable you can use
-  //       and you can just export the data when you have it.
+  // Note: you can perform any asynchronous actions here.
+  // ===== Just export the result as as a property called data
+  //       and that will be available to you on the client.
   //
-  // e.g., the following can be made to work:
+  // Injected properties that you have available:
   //
-  // export const data = ['this', 'could', 'be', 'from', 'a', 'database', request.mock]
+  // - request: the Node request object.
+  export const data = ['this', 'could', 'be', 'from', 'a', 'database', request.mock]
 </script>
 
 <script>

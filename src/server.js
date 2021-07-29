@@ -15,8 +15,6 @@ polka()
     // (Currently mocked in the loader.)
     const { html, css } = indexPage.render({name: "from the server"})
 
-    console.log('===============')
-
     const fullHtml = `
     <!DOCTYPE html>
 <html lang='en'>
@@ -55,8 +53,6 @@ polka()
     </script></body>`)
 
     // const htmlWithHydration = fullHtml
-
-    console.log(htmlWithHydration)
 
     res.end(htmlWithHydration)
   })
