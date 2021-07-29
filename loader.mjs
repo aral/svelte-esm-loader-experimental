@@ -3,7 +3,7 @@ import fs from 'fs'
 import { compile } from 'svelte/compiler'
 
 const scriptRegExp = /\<script\>.*?\<\/script\>/s
-const nodeScriptRegExp = /\<script type=['"]node['"]\>(.*?)\<\/script\>/s
+const nodeScriptRegExp = /\<script context=['"]node['"]\>(.*?)\<\/script\>/s
 const styleRegExp = /\<style\>.*?\<\/style\>/s
 
 export async function resolve(specifier, context, defaultResolve) {

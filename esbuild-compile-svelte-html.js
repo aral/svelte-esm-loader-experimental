@@ -23,7 +23,7 @@ import { compile } from 'svelte/compiler'
 import requireFromString from 'require-from-string'
 
 const scriptRegExp = /\<script\>.*?\<\/script\>/s
-const nodeScriptRegExp = /\<script type=['"]node['"]\>(.*?)\<\/script\>/s
+const nodeScriptRegExp = /\<script context=['"]node['"]\>(.*?)\<\/script\>/s
 const styleRegExp = /\<style\>.*?\<\/style\>/s
 
 let sveltePlugin = {

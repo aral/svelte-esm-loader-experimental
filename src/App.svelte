@@ -1,4 +1,4 @@
-<script type='node'>
+<script context='node'>
   export const data = ['this', 'could', 'be', 'from', 'a', 'database']
 </script>
 
