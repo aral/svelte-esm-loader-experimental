@@ -3,7 +3,7 @@
 </script>
 
 <script>
-  import Inner from './Inner.svelte'
+  import Inner from './Inner.component'
   export let name
 
   let data

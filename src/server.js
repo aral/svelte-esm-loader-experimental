@@ -1,5 +1,5 @@
 import polka from 'polka'
-import App from './App.svelte'
+import indexPage from './index.page'
 import fs from 'fs'
 
 // TODO: Integrate esbuild-compile-svelte into the server
@@ -7,13 +7,13 @@ import fs from 'fs'
 //       render from memory.
 //
 // (Currently you have to call it manually.)
-const appEsbuildJs = fs.readFileSync('App-esbuild.js', 'utf-8')
+const appEsbuildJs = fs.readFileSync('index.page-esbuild.js', 'utf-8')
 
 polka()
   .get('/', (req, res) => {
     // We should really be adding the SSR data here.
     // (Currently mocked in the loader.)
-    const { html, css } = App.render({name: "from the server"})
+    const { html, css } = indexPage.render({name: "from the server"})
 
     console.log('===============')
 
@@ -39,7 +39,9 @@ polka()
     const htmlWithHydration = fullHtml.replace('</body>', `<script type='module'>
       ${appEsbuildJs}
 
-      new App({
+      // TODO: Note: class name will be different for each page.
+      // =========== This is currently hardcoded.
+      new Src({
         target: document.getElementById('app'),
         hydrate: true,
         props: {

@@ -11,7 +11,7 @@ const styleRegExp = /\<style\>.*?\<\/style\>/s
 let sveltePlugin = {
   name: 'svelte',
   setup(build) {
-    build.onLoad({ filter: /\.svelte$/ }, async (args) => {
+    build.onLoad({ filter: /(\.svelte|\.component|\.page|\.layout)$/ }, async (args) => {
       // This converts a message in Svelte's format to esbuild's format
       let convertMessage = ({ message, start, end }) => {
         let location
@@ -52,17 +52,18 @@ let sveltePlugin = {
       }
 
       // Layout support (again, hardcoded for this spike)
-      if (args.path.endsWith('App.svelte')) {
+      if (args.path.endsWith('index.page')) {
         const script = scriptRegExp.exec(source)[0]
         const markup = source.replace(scriptRegExp, '').replace(styleRegExp, '').trim()
 
-        const scriptWithLayoutImport = script.replace('<script>', "<script>\n  import Layout from './Layout.svelte'\n")
-        const markupWithLayout = `<Layout>\n${markup}\n</Layout>`
+        const scriptWithLayoutImport = script.replace('<script>', "<script>\n  import PageLayout from './Page.layout'\n")
+        const markupWithLayout = `<PageLayout>\n${markup}\n</PageLayout>`
 
         source = source.replace(script, scriptWithLayoutImport).replace(markup, markupWithLayout)
       }
 
       // Convert Svelte syntax to JavaScript
+      console.log('FILENAME', filename)
       try {
         let { js, warnings } = compile(source, {
           filename,
@@ -82,9 +83,8 @@ import esbuild from 'esbuild'
 let result
 try {
   result = await esbuild.build({
-    entryPoints: ['src/App.svelte'],
+    entryPoints: ['src/index.page'],
     bundle: true,
-    // outfile: 'App-esbuild.js',
     format: 'esm',
     // Do not write out, we will consume the generated source from here.
     write: false,
@@ -97,6 +97,8 @@ try {
 
 const code = new TextDecoder().decode(result.outputFiles[0].contents)
 
+console.log(code)
+
 // For now, just write the file.
 // In actuality, we will store the contents in memory.
-fs.writeFileSync('App-esbuild.js', code, 'utf-8')
+fs.writeFileSync('index.page-esbuild.js', code, 'utf-8')

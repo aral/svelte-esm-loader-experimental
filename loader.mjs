@@ -20,8 +20,18 @@ export async function resolve(specifier, context, defaultResolve) {
   return defaultResolve(specifier, context, defaultResolve)
 }
 
+// Note: .component is just a (semantically more accurate, given our use case) alias
+// ===== for .svelte and is treated in exactly the same way. On the other hand,
+//       .page and .layout are supersets of Svelte and can include a script block
+//       with a context of 'node' that gets executed in Node before every render. The data
+//       returned is injected into the page as it is being rendered. Additionally,
+//       .layout files get special treatment in that they are injected into every page
+//       within the same directory and any subdirectories (TODO) unless a reset.layout file
+//       is present (TODO).
+
 export async function getFormat(url, context, defaultGetFormat) {
-  if (url.endsWith('.svelte')) {
+  console.log('getFormat', url, context, defaultGetFormat)
+  if (url.endsWith('.svelte') || url.endsWith('.component') || url.endsWith('.page') || url.endsWith('.layout')) {
     return { format: 'module' }
   }
 
@@ -31,7 +41,7 @@ export async function getFormat(url, context, defaultGetFormat) {
 export async function getSource(href, context, defaultGetSource) {
   const url = new URL(href)
 
-  if (url.protocol === "file:" && path.extname(href) === '.svelte') {
+  if (url.protocol === "file:" && (path.extname(href) === '.svelte') || (path.extname(href) === '.component') || (path.extname(href) === '.page') || (path.extname(href) === '.layout')) {
     const source = await compileSource(url.pathname)
 
     return { source }
@@ -43,7 +53,7 @@ export async function getSource(href, context, defaultGetSource) {
 async function compileSource(filePath) {
   const source = fs.readFileSync(filePath, 'utf8')
 
-  console.log('========>>>> FILEPATH = ', filePath)
+  console.log('compileSource ========>>>> FILEPATH = ', filePath)
 
   let svelteSource = source
   let nodeSource
@@ -65,12 +75,12 @@ async function compileSource(filePath) {
 
   // Layout support (again, hardcoded for this spike)
   // (In the actual framework, this would only take place in the .page loader.)
-  if (filePath.endsWith('App.svelte')) {
+  if (filePath.endsWith('index.page')) {
     const script = scriptRegExp.exec(svelteSource)[0]
     const markup = svelteSource.replace(scriptRegExp, '').replace(styleRegExp, '').trim()
 
-    const scriptWithLayoutImport = script.replace('<script>', "<script>\n  import Layout from './Layout.svelte'\n")
-    const markupWithLayout = `<Layout>\n${markup}\n</Layout>`
+    const scriptWithLayoutImport = script.replace('<script>', "<script>\n  import PageLayout from './Page.layout'\n")
+    const markupWithLayout = `<PageLayout>\n${markup}\n</PageLayout>`
 
     svelteSource = svelteSource.replace(script, scriptWithLayoutImport).replace(markup, markupWithLayout)
 
