@@ -10,7 +10,7 @@
   // - request: the Node request object.
   //
   //////////////////////////////////////////////////////////////////
-  
+
   export const data = ['this', 'could', 'be', 'from', 'a', 'database', request.mock]
 </script>
 
