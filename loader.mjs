@@ -34,7 +34,7 @@ export async function getSource(href, context, defaultGetSource) {
   if (url.protocol === "file:" && path.extname(href) === '.svelte') {
     const source = await compileSource(url.pathname)
 
-    return { source /*: adjustImports(source)*/ }
+    return { source }
   }
 
   return defaultGetSource(href, context, defaultGetSource)
