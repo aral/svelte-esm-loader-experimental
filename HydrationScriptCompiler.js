@@ -32,7 +32,7 @@ export async function hydrationScriptCompiler (relativePagePath) {
 // Private
 
 const scriptRegExp = /\<script\>.*?\<\/script\>/s
-const nodeScriptRegExp = /\<script context=['"]node['"]\>(.*?)\<\/script\>/s
+const nodeScriptRegExp = /\<node\>(.*?)\<\/node\>/s
 const styleRegExp = /\<style\>.*?\<\/style\>/s
 
 const sveltePlugin = {

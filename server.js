@@ -37,8 +37,6 @@ polka()
     // Run the nodeScript if it exists
     const data = nodeScript ? await nodeScript({mock: 'request'}) : undefined
 
-    console.log('>>> DATA', data)
-
     // Render the page, passing the server-side data as a property.
     const { html, css } = indexPage.render({data})
 
