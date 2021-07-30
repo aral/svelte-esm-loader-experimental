@@ -1,4 +1,4 @@
-console.log('================== MAIN PROCESS (SERVER) =====================')
+console.log('================== MAIN PROCESS (SERVER) START ==============')
 console.time('Server initialisation')
 
 import polka from 'polka'
@@ -72,7 +72,7 @@ polka()
     response.end(finalHtml)
   })
   .listen(3001, () => {
-    console.log('Running on port 3001')
+    console.log('Server is running on port 3001')
     console.timeEnd('Server initialisation')
   })
 

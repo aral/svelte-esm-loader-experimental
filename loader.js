@@ -1,5 +1,5 @@
 console.time('Loader initialisation')
-console.log('================== LOADER PROCESS =====================')
+console.log('================== LOADER PROCESS START =====================')
 import path from 'path'
 import fs from 'fs'
 import { compile } from 'svelte/compiler'
