@@ -32,12 +32,18 @@ if (routeCache.nodeScript) {
 // ===== module (ala Site.js).
 polka()
   .get('/', async (request, response) => {
+    console.time('Request')
+    console.time('  ╭─ Node script execution (initial data)')
     // Run the nodeScript if it exists
     const data = nodeScript ? await nodeScript({mock: 'request'}) : undefined
+    console.timeEnd('  ╭─ Node script execution (initial data)')
 
+    console.time('  ├─ Page render (html + css)')
     // Render the page, passing the server-side data as a property.
     const { html, css } = indexPage.render({data})
+    console.timeEnd('  ├─ Page render (html + css)')
 
+    console.time('  ├─ Final HTML render')
     const finalHtml = `
     <!DOCTYPE html>
       <html lang='en'>
@@ -69,7 +75,13 @@ polka()
       </body>
       </html>
     `
+    console.timeEnd('  ├─ Final HTML render')
+
+    console.time('  ├─ Response send')
     response.end(finalHtml)
+    console.timeEnd('  ├─ Response send')
+
+    console.timeEnd('Request')
   })
   .listen(3001, () => {
     console.log('Server is running on port 3001')
