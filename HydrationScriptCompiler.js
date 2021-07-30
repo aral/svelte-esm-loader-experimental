@@ -68,14 +68,6 @@ const sveltePlugin = {
         // Contains a Node script. Svelte knows nothing about this, so we
         // strip it out and persist it for use during server-side rendering.
         source = source.replace(nodeScriptResult[0], '')
-
-        // nodeSource = `export default async request => {\n${nodeScriptResult[1]}\n}`
-
-        // // Write the Node script as a temporary file.
-        // // TODO: this should write to a gitignored and hidden temporary file/folder.
-        // fs.writeFileSync('Temp.js', nodeSource)
-        // const data = (await import('./Temp.js')).data
-        // source = source.replace('let data', `let data = ${JSON.stringify(data)}`)
       }
 
       // Layout support (again, hardcoded for this spike)
