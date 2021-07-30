@@ -28,7 +28,6 @@ export async function resolve(specifier, context, defaultResolve) {
     }
   }
 
-  // console.log('LOADER', specifier, context, defaultResolve)
   return defaultResolve(specifier, context, defaultResolve)
 }
 

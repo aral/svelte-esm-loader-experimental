@@ -38,9 +38,7 @@ const styleRegExp = /\<style\>.*?\<\/style\>/s
 const sveltePlugin = {
   name: 'svelte',
   setup(build) {
-    //
     build.onLoad({ filter: /(\.svelte|\.component|\.page|\.layout)$/ }, async (args) => {
-      // console.log('>>', args)
       // This converts a message in Svelte's format to esbuild's format
       let convertMessage = ({ message, start, end }) => {
         let location

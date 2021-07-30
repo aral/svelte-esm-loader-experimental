@@ -1,14 +1,16 @@
 import polka from 'polka'
 import JSDB from '@small-tech/jsdb'
 import fs from 'fs'
-// import { renderHtml } from './HtmlRenderer.js'
 
 // Note: in the actual server this will be a dynamic import.
 import indexPage from 'src/index.page'
 
-// Note: we have the loader writing to this database
-// ===== from a different context. Let’s see if this
-//       messes anything up.
+// Note: We use JSDB as the communication channel between
+// ===== the Node ES Module loader and the main application.
+//       Remember that JSDB is designed for a single-threaded
+//       environment so keep an eye out for issues in the future.
+//       (There shouldn’t be any as the loader writes and the
+//       main app only reads, but still…)
 const db = JSDB.open('.cache')
 
 const routeCache = db.routes['src/index.page']
@@ -20,20 +22,13 @@ let nodeScript
 if (routeCache.nodeScript) {
   fs.writeFileSync('.script.tmp.js', routeCache.nodeScript)
   nodeScript = (await import('./.script.tmp.js')).default
-  // console.log('nodeScript', nodeScript)
   fs.unlinkSync('.script.tmp.js')
 }
-
-console.log('nodeScript', nodeScript)
-// console.log('hydrationScript', hydrationScript)
 
 // TODO: In actual app, each route will be in its own
 // ===== module (ala Site.js).
 polka()
   .get('/', async (request, response) => {
-
-    console.log('====== Serving route ======')
-
     // Run the nodeScript if it exists
     const data = nodeScript ? await nodeScript({mock: 'request'}) : undefined
 
@@ -71,8 +66,6 @@ polka()
       </body>
       </html>
     `
-
-    console.log(finalHtml)
     response.end(finalHtml)
   })
   .listen(3001, () => {
