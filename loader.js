@@ -1,3 +1,5 @@
+console.time('Loader initialisation')
+console.log('================== LOADER PROCESS =====================')
 import path from 'path'
 import fs from 'fs'
 import { compile } from 'svelte/compiler'
@@ -115,3 +117,5 @@ async function compileSource(filePath) {
 
   return output.js.code
 }
+
+console.timeEnd('Loader initialisation')

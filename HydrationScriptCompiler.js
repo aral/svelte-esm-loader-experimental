@@ -9,6 +9,7 @@ import { compile } from 'svelte/compiler'
 import esbuild from 'esbuild'
 
 export async function hydrationScriptCompiler (relativePagePath) {
+  console.time(`Hydration script compile: ${relativePagePath}`)
   let result
   try {
     result = await esbuild.build({
@@ -25,6 +26,7 @@ export async function hydrationScriptCompiler (relativePagePath) {
   }
 
   const code = new TextDecoder().decode(result.outputFiles[0].contents)
+  console.timeEnd(`Hydration script compile: ${relativePagePath}`)
 
   return code
 }

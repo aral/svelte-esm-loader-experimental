@@ -1,3 +1,6 @@
+console.log('================== MAIN PROCESS (SERVER) =====================')
+console.time('Server initialisation')
+
 import polka from 'polka'
 import JSDB from '@small-tech/jsdb'
 import fs from 'fs'
@@ -70,4 +73,6 @@ polka()
   })
   .listen(3001, () => {
     console.log('Running on port 3001')
+    console.timeEnd('Server initialisation')
   })
+
