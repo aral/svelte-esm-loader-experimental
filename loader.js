@@ -84,8 +84,8 @@ async function compileSource(filePath) {
     nodeScript = `export default async request => {\n${nodeScriptResult[1]}\n}`
   }
 
-  // Layout support (again, hardcoded for this spike)
-  // (In the actual framework, this would only take place in the .page loader.)
+  // Layout and hydration script support (again, hardcoded for this spike to the index page
+  // and the single Page.layout). In the actual framework, this would only take place in the .page loader.
   if (filePath.endsWith('index.page')) {
     const script = scriptRegExp.exec(svelteSource)[0]
     const markup = svelteSource.replace(scriptRegExp, '').replace(styleRegExp, '').trim()
@@ -94,6 +94,16 @@ async function compileSource(filePath) {
     const markupWithLayout = `<PageLayout>\n${markup}\n</PageLayout>`
 
     svelteSource = svelteSource.replace(script, scriptWithLayoutImport).replace(markup, markupWithLayout)
+
+    // Client-side hydration script.
+    const hydrationCode = await hydrationScriptCompiler(route)
+    const hydrationScript = hydrationCode
+
+    // Update the route cache with the material for this route.
+    db.routes[route] = {
+      nodeScript,
+      hydrationScript
+    }
   }
 
   const output = compile(svelteSource, {
@@ -101,19 +111,6 @@ async function compileSource(filePath) {
     format: 'esm',
     hydratable: true
   })
-
-  // TODO: loader must separate between .svelte/.component, .page, and .layout
-  // ===== and handle each accordingly.
-
-  // Client-side hydration script.
-  const hydrationCode = await hydrationScriptCompiler(route)
-  const hydrationScript = hydrationCode
-
-  // Update the route cache with the material for this route.
-  db.routes[route] = {
-    nodeScript,
-    hydrationScript
-  }
 
   return output.js.code
 }
