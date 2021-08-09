@@ -6,7 +6,8 @@ import JSDB from '@small-tech/jsdb'
 import fs from 'fs'
 
 // Note: in the actual server this will be a dynamic import.
-import indexPage from 'src/index.page'
+let indexPagePath = './src/index.page'
+const indexPage = (await import(indexPagePath)).default
 
 // Note: We use JSDB as the communication channel between
 // ===== the Node ES Module loader and the main application.
@@ -23,9 +24,10 @@ const hydrationScript = routeCache.hydrationScript
 // so we can import it.
 let nodeScript
 if (routeCache.nodeScript) {
-  fs.writeFileSync('.script.tmp.js', routeCache.nodeScript)
-  nodeScript = (await import('./.script.tmp.js')).default
-  fs.unlinkSync('.script.tmp.js')
+  let dynamicModule = '.script.tmp.js'
+  fs.writeFileSync(dynamicModule, routeCache.nodeScript)
+  nodeScript = (await import(`./${dynamicModule}`)).default
+  fs.unlinkSync(dynamicModule)
 }
 
 // TODO: In actual app, each route will be in its own
