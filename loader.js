@@ -33,6 +33,10 @@ export async function resolve(specifier, context, defaultResolve) {
   return defaultResolve(specifier, context, defaultResolve)
 }
 
+// Node version 16.x: in 14.x, this call was split between three separate hooks, two of
+// which we were using (getFormat and getSource), which are now deprecated.
+// (See https://nodejs.org/docs/latest-v16.x/api/esm.html#loaders)
+//
 // Note: .component is just a (semantically more accurate, given our use case) alias
 // ===== for .svelte and is treated in exactly the same way. On the other hand,
 //       .page and .layout are supersets of Svelte and can include a script block
@@ -42,25 +46,17 @@ export async function resolve(specifier, context, defaultResolve) {
 //       within the same directory and any subdirectories (TODO) unless a reset.layout file
 //       is present (TODO).
 
-export async function getFormat(url, context, defaultGetFormat) {
-  if (url.endsWith('.svelte') || url.endsWith('.component') || url.endsWith('.page') || url.endsWith('.layout')) {
-    return { format: 'module' }
+export async function load(url /* string */, context, defaultLoad) {
+  const _url = new URL(url)
+
+  if (_url.protocol === 'file:' && url.endsWith('.svelte') || url.endsWith('.component') || url.endsWith('.page') || url.endsWith('.layout')) {
+    const format = 'module'
+    const source = await compileSource(_url.pathname)
+
+    return { format, source }
   }
 
-  return defaultGetFormat(url, context, defaultGetFormat)
-}
-
-
-export async function getSource(href, context, defaultGetSource) {
-  const url = new URL(href)
-
-  if (url.protocol === "file:" && (path.extname(href) === '.svelte') || (path.extname(href) === '.component') || (path.extname(href) === '.page') || (path.extname(href) === '.layout')) {
-    const source = await compileSource(url.pathname)
-
-    return { source }
-  }
-
-  return defaultGetSource(href, context, defaultGetSource)
+  return defaultLoad(url, context, defaultLoad)
 }
 
 
