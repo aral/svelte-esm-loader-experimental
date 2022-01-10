@@ -8,12 +8,12 @@
     "dev": "node --experimental-modules --experimental-loader ./loader.js server.js"
   },
   "dependencies": {
-    "@small-tech/jsdb": "^2.0.4",
+    "@small-tech/jsdb": "^2.0.6",
     "polka": "^0.5.2",
     "require-from-string": "^2.0.2",
-    "svelte": "^3.41.0"
+    "svelte": "^3.45.0"
   },
   "devDependencies": {
-    "esbuild": "^0.12.19"
+    "esbuild": "^0.12.29"
   }
 }
