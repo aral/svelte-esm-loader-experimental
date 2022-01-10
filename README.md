@@ -17,6 +17,8 @@ This is a fork of Josh Nuss’s [svelte-esm-loader-experimental] that:
 npm run dev
 ```
 
+Note: this currently only works in Node 16.x. (Node 14.x had a different syntax for the experimental ES Module loaders)
+
 ---
 
 ## Original module documentation follows
