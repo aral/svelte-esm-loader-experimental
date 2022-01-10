@@ -9,11 +9,9 @@
   },
   "dependencies": {
     "@small-tech/jsdb": "^2.0.6",
+    "esbuild": "^0.14.11",
     "polka": "^0.5.2",
     "require-from-string": "^2.0.2",
     "svelte": "^3.45.0"
-  },
-  "devDependencies": {
-    "esbuild": "^0.12.29"
   }
 }
