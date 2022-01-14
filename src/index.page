@@ -1,4 +1,4 @@
-<node>
+<data>
   //////////////////////////////////////////////////////////////////
   //
   // Note: you can perform any asynchronous actions here.
@@ -15,7 +15,7 @@
     location: 'from the server',
     message: ['this', 'could', 'be', 'from', 'a', 'database', request.mock]
   }
-</node>
+</data>
 
 <script>
   import Inner from './Inner.component'

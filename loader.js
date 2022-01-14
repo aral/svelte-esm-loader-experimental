@@ -16,7 +16,7 @@ if (!db.routes) {
 }
 
 const scriptRegExp = /\<script\>.*?\<\/script\>/s
-const nodeScriptRegExp = /\<node\>(.*?)\<\/node\>/s
+const nodeScriptRegExp = /\<data\>(.*?)\<\/data\>/s
 const styleRegExp = /\<style\>.*?\<\/style\>/s
 
 export async function resolve(specifier, context, defaultResolve) {
